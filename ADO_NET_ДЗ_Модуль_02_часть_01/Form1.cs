@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Npgsql;
+using Npgsql;  
 
 
 namespace ADO_NET_ДЗ_Модуль_02_часть_01
@@ -27,16 +29,31 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            connection = new NpgsqlConnection(connection_string);
-            connection.Open();
-           
+            try
+            {
+                connection = new NpgsqlConnection(connection_string);
+                connection.Open();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + '\n' + "\tCheck the entered data for connection!", "Error!");
+            }
         }
         private DataTable loadTable()
         {
-            DataTable storage_dt = new DataTable();
-            NpgsqlDataAdapter sda = new NpgsqlDataAdapter($"SELECT * FROM {table_name}", connection);
-            sda.Fill(storage_dt);
-            return storage_dt;
+            try
+            {
+                DataTable storage_dt = new DataTable();
+                NpgsqlDataAdapter sda = new NpgsqlDataAdapter($"SELECT * FROM {table_name}", connection);
+                sda.Fill(storage_dt);
+                return storage_dt;
+            }
+            catch ( Exception ex )
+            {
+                
+                MessageBox.Show(ex.Message, "Error!");
+                throw ex;
+            }
         }
         
         private void btn_execute_Click(object sender, EventArgs e)
@@ -44,6 +61,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             if (radioButton1.Checked) insertToProducts();
             if (radioButton2.Checked) insertToProviders();
             if (radioButton3.Checked) insertToCategory();
+            if (radioButton9.Checked) insertToProducts_Providers();
         }
         private void btn_update_Click(object sender, EventArgs e)
         {
@@ -56,6 +74,19 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             if (radioButton1.Checked) DeleteData();
             if (radioButton2.Checked) DeleteData();
             if (radioButton3.Checked) DeleteData();
+        }
+
+        private void insertToProducts_Providers()
+        {
+            string commandText = $"INSERT INTO {table_name} (products_id, providers_id)" +
+                $" VALUES (@prodID, @provID)";
+            using(var cmd = new NpgsqlCommand(commandText, connection))
+            {
+                cmd.Parameters.AddWithValue("prodID", Convert.ToInt16(textBox1.Text));
+                cmd.Parameters.AddWithValue("provID", Convert.ToInt16(textBox2.Text));
+                cmd.ExecuteNonQuery();
+                dataGridView1.DataSource = loadTable();
+            }
         }
 
         private void insertToProducts()
@@ -98,6 +129,9 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 dataGridView1.DataSource = loadTable();
             }
         }
+
+
+
         private void updateToProducts()
         {
             string commandText = $"UPDATE {table_name} SET _name = @name, _price = @price, category_id = @category_id" +
@@ -139,7 +173,6 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 dataGridView1.DataSource = loadTable();
             }
         }
-
         private void DeleteData()
         {
             string commandText = $"DELETE FROM {table_name} WHERE id = @id";
@@ -151,7 +184,6 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 dataGridView1.DataSource = loadTable();
             }
         }
-
         private void btn_choice_Click(object sender, EventArgs e)
         {
             if(radioButton1.Checked)
@@ -193,6 +225,10 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 textBox3.Enabled = false;
                 
             }
+            if(radioButton9.Checked)
+            {
+
+            }
         }
         private void ClearAllText()
         {
@@ -201,8 +237,34 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             textBox3.Clear();
             textBox4.Clear();
         }
+        private void commandDB(string command)
+        {
+            using (DbDataAdapter dbDataAdapter = new NpgsqlDataAdapter(command, connection))
+            {
+                try
+                {
+                    dbDataAdapter.Fill(dataSet1.Tables.Add());
+                    dataGridView1.DataSource = dataSet1.Tables[dataSet1.Tables.Count - 1];
 
-       
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error!");
+                }
+            }
+        }
+
+
+        private void btn_choice_select_Click(object sender, EventArgs e)
+        {
+            if(radioButton4.Enabled)
+            {
+                commandDB("select providers._name, providers._phone_number, count(products_id) as \"Quantity products\"" +
+                    " from providers inner join products_providers on providers.id = providers_id join products on products_id = products.id" +
+                    " group by providers._name, providers._phone_number order by count(products_id) desc limit 1;");
+            }
+
+        }
     }
     
 }
