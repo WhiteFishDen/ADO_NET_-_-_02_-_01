@@ -39,12 +39,13 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 MessageBox.Show(ex.Message + '\n' + "\tCheck the entered data for connection!", "Error!");
             }
         }
-        private DataTable loadTable()
+        private DataTable loadTable (string table, string command = "SELECT * FROM ")
         {
+            if (command == "SELECT * FROM ") command += table;
             try
             {
                 DataTable storage_dt = new DataTable();
-                NpgsqlDataAdapter sda = new NpgsqlDataAdapter($"SELECT * FROM {table_name}", connection);
+                NpgsqlDataAdapter sda = new NpgsqlDataAdapter(command, connection);
                 sda.Fill(storage_dt);
                 return storage_dt;
             }
@@ -54,6 +55,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 MessageBox.Show(ex.Message, "Error!");
                 throw ex;
             }
+           
         }
         
         private void btn_execute_Click(object sender, EventArgs e)
@@ -85,7 +87,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("prodID", Convert.ToInt16(textBox1.Text));
                 cmd.Parameters.AddWithValue("provID", Convert.ToInt16(textBox2.Text));
                 cmd.ExecuteNonQuery();
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
 
@@ -100,7 +102,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("category_id", Convert.ToInt32(textBox3.Text));
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been inserted successfully!");
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
         private void insertToProviders()
@@ -113,7 +115,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("phone_number", Convert.ToInt64(textBox2.Text));
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been inserted successfully!");
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
 
@@ -126,7 +128,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("name", textBox1.Text);
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been inserted successfully!");
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
 
@@ -144,7 +146,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("category_id", Convert.ToInt32(textBox3.Text));
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been updated successfully!");
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
         private void updateToProviders()
@@ -158,7 +160,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("phone_number", Convert.ToInt64(textBox2.Text));
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been updated successfully!");
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
         private void updateToCategory()
@@ -170,7 +172,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("name", textBox1.Text);
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been updated successfully!");
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
         private void DeleteData()
@@ -181,7 +183,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 cmd.Parameters.AddWithValue("id", Convert.ToInt16(textBox4.Text));
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been deleted successfully!");
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
             }
         }
         private void btn_choice_Click(object sender, EventArgs e)
@@ -190,7 +192,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             {
                 ClearAllText();
                 table_name = "products";
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
                 label1.Text = "Name product";
                 textBox1.Enabled = true;
                 label2.Text = "Price";
@@ -203,7 +205,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             {
                 ClearAllText();
                 table_name = "providers";
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
                 label1.Text = "Name provider";
                 textBox1.Enabled = true;
                 label2.Text = "Phone number";
@@ -216,7 +218,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             {
                 ClearAllText();
                 table_name = "category_product";
-                dataGridView1.DataSource = loadTable();
+                dataGridView1.DataSource = loadTable(table_name);
                 label1.Text = "Category Name";
                 textBox1.Enabled = true;
                 label2.Text = "";
@@ -227,7 +229,15 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             }
             if(radioButton9.Checked)
             {
-
+                ClearAllText();
+                table_name = "products_providers";
+                dataGridView1.DataSource = loadTable(table_name);
+                label1.Text = "products_id";
+                textBox1.Enabled = true;
+                label2.Text = "providers_id";
+                textBox2.Enabled = true;
+                label3.Text = "";
+                textBox3.Enabled = false;
             }
         }
         private void ClearAllText()
@@ -237,33 +247,36 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             textBox3.Clear();
             textBox4.Clear();
         }
-        private void commandDB(string command)
-        {
-            using (DbDataAdapter dbDataAdapter = new NpgsqlDataAdapter(command, connection))
-            {
-                try
-                {
-                    dbDataAdapter.Fill(dataSet1.Tables.Add());
-                    dataGridView1.DataSource = dataSet1.Tables[dataSet1.Tables.Count - 1];
-
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Error!");
-                }
-            }
-        }
-
-
+      
+        
         private void btn_choice_select_Click(object sender, EventArgs e)
         {
-            if(radioButton4.Enabled)
+            if(radioButton4.Checked)
             {
-                commandDB("select providers._name, providers._phone_number, count(products_id) as \"Quantity products\"" +
+                dataGridView1.DataSource = loadTable(table_name,"select providers._name, providers._phone_number, count(products_id) as \"Quantit products\"" +
                     " from providers inner join products_providers on providers.id = providers_id join products on products_id = products.id" +
                     " group by providers._name, providers._phone_number order by count(products_id) desc limit 1;");
             }
-
+            if(radioButton5.Checked)
+            {
+                dataGridView1.DataSource = loadTable(table_name,"select providers._name, providers._phone_number, count(products_id) as \"Quantity products\"" +
+                    "from providers inner join products_providers on providers.id = providers_id join products on products_id = products.id" +
+                    " group by providers._name, providers._phone_number order by count(products_id) limit 1;");
+            }
+            if(radioButton6.Checked)
+            {
+                dataGridView1.DataSource = loadTable(table_name, "select category_product._name as \"Name of category\", count(products.id) as \"Quantity of products\" " +
+                    "from category_product join products on category_product.id = products.category_id group by category_product._name order by count(products.id) desc limit 1;");
+            }
+            if(radioButton7.Checked)
+            {
+                dataGridView1.DataSource = loadTable(table_name, "select category_product._name as \"Name of category\", count(products.id) as \"Quantity of products\" "+
+                    "from category_product join products on category_product.id = products.category_id group by category_product._name order by count(products.id) limit 1;");
+            }
+            if(radioButton8.Checked)
+            {
+                dataGridView1.DataSource = loadTable(table_name, "");
+            }
         }
     }
     
