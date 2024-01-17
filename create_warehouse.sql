@@ -9,7 +9,8 @@ create table products
 	id int generated always as identity primary key,
 	_name varchar not null,
 	_price numeric not null,
-	category_id int references category_product(id) ON DELETE CASCADE
+	category_id int references category_product(id) ON DELETE CASCADE,
+	date_of_delivery date not null
 );
 
 create table providers 
@@ -29,8 +30,8 @@ create table products_providers
 insert into category_product (_name)
 values ('household'),('dairy'),('alcohol');
 
-insert into products(_name, _price, category_id)
-values ('milk', 56.34, 2), ('soap', 50.05, 1), ('beer', 68.75, 3);
+insert into products(_name, _price, category_id, date_of_delivery)
+values ('milk', 56.34, 2, '2024-01-03'), ('soap', 50.05, 1, '2024-01-12'), ('beer', 68.75, 3, '2024-01-10');
 
 insert into providers(_name, _phone_number)
 values ('MainWall Company', 238912), ('AlcoBro Company', 902301);
