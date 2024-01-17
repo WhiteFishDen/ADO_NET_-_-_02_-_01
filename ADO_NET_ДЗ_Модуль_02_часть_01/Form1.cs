@@ -53,29 +53,53 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             {
                 
                 MessageBox.Show(ex.Message, "Error!");
-                throw ex;
+                return null;
             }
            
         }
         
         private void btn_execute_Click(object sender, EventArgs e)
         {
-            if (radioButton1.Checked) insertToProducts();
-            if (radioButton2.Checked) insertToProviders();
-            if (radioButton3.Checked) insertToCategory();
-            if (radioButton9.Checked) insertToProducts_Providers();
+            try
+            {
+                if (radioButton1.Checked) insertToProducts();
+                if (radioButton2.Checked) insertToProviders();
+                if (radioButton3.Checked) insertToCategory();
+                if (radioButton9.Checked) insertToProducts_Providers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!");
+            }
+            
         }
         private void btn_update_Click(object sender, EventArgs e)
         {
-            if (radioButton1.Checked) updateToProducts();
-            if (radioButton2.Checked) updateToProviders();
-            if (radioButton3.Checked) updateToCategory();
+            try
+            {
+                if (radioButton1.Checked) updateToProducts();
+                if (radioButton2.Checked) updateToProviders();
+                if (radioButton3.Checked) updateToCategory();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!");
+            }
+           
         }
         private void btn_delete_Click(object sender, EventArgs e)
         {
-            if (radioButton1.Checked) DeleteData();
-            if (radioButton2.Checked) DeleteData();
-            if (radioButton3.Checked) DeleteData();
+            try
+            {
+                if (radioButton1.Checked) DeleteData();
+                if (radioButton2.Checked) DeleteData();
+                if (radioButton3.Checked) DeleteData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!");
+            }
+            
         }
 
         private void insertToProducts_Providers()
@@ -93,13 +117,14 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
 
         private void insertToProducts()
         {
-            string commandText = $"INSERT INTO {table_name} (_name, _price, category_id)" +
-               $" VALUES (@name,@price,@category_id)";
+            string commandText = $"INSERT INTO {table_name} (_name, _price, category_id, date_of_delivery)" +
+               $" VALUES (@name,@price,@category_id, @date)";
             using (var cmd = new NpgsqlCommand(commandText, connection))
             {
                 cmd.Parameters.AddWithValue("name", textBox1.Text);
                 cmd.Parameters.AddWithValue("price", Convert.ToDecimal(textBox2.Text));
                 cmd.Parameters.AddWithValue("category_id", Convert.ToInt32(textBox3.Text));
+                cmd.Parameters.AddWithValue("date", dateTimePicker1.Value);
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Data has been inserted successfully!");
                 dataGridView1.DataSource = loadTable(table_name);
@@ -136,18 +161,19 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
 
         private void updateToProducts()
         {
-            string commandText = $"UPDATE {table_name} SET _name = @name, _price = @price, category_id = @category_id" +
-                $" WHERE id = @id";
-            using (var cmd = new NpgsqlCommand(commandText, connection))
-            {
-                cmd.Parameters.AddWithValue("id", Convert.ToInt16(textBox4.Text));
-                cmd.Parameters.AddWithValue("name", textBox1.Text);
-                cmd.Parameters.AddWithValue("price", Convert.ToDecimal(textBox2.Text));
-                cmd.Parameters.AddWithValue("category_id", Convert.ToInt32(textBox3.Text));
-                cmd.ExecuteNonQuery();
-                MessageBox.Show("Data has been updated successfully!");
-                dataGridView1.DataSource = loadTable(table_name);
-            }
+                string commandText = $"UPDATE {table_name} SET _name = @name, _price = @price, category_id = @category_id, date_of_delivery = @date" +
+              $" WHERE id = @id";
+                using (var cmd = new NpgsqlCommand(commandText, connection))
+                {
+                    cmd.Parameters.AddWithValue("id", Convert.ToInt16(textBox4.Text));
+                    cmd.Parameters.AddWithValue("name", textBox1.Text);
+                    cmd.Parameters.AddWithValue("price", Convert.ToDecimal(textBox2.Text));
+                    cmd.Parameters.AddWithValue("category_id", Convert.ToInt32(textBox3.Text));
+                    cmd.Parameters.AddWithValue("date", dateTimePicker1.Value);
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Data has been updated successfully!");
+                    dataGridView1.DataSource = loadTable(table_name);
+                }
         }
         private void updateToProviders()
         {
@@ -199,6 +225,8 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 textBox2.Enabled = true;
                 label3.Text = "Category";
                 textBox3.Enabled = true;
+                label5.Text = "Date of delivary";
+                dateTimePicker1.Enabled = true;
                 
             }
             if(radioButton2.Checked)
@@ -212,7 +240,8 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 textBox2.Enabled = true;
                 label3.Text = "";
                 textBox3.Enabled = false;
-                
+                label5.Text = "";
+                dateTimePicker1.Enabled = false;
             }
             if(radioButton3.Checked)
             {
@@ -225,7 +254,8 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 textBox2.Enabled = false;
                 label3.Text = "";
                 textBox3.Enabled = false;
-                
+                label5.Text = "";
+                dateTimePicker1.Enabled = false;
             }
             if(radioButton9.Checked)
             {
@@ -238,6 +268,8 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
                 textBox2.Enabled = true;
                 label3.Text = "";
                 textBox3.Enabled = false;
+                label5.Text = "";
+                dateTimePicker1.Enabled = false;
             }
         }
         private void ClearAllText()
@@ -246,6 +278,7 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             textBox2.Clear();
             textBox3.Clear();
             textBox4.Clear();
+            
         }
       
         
@@ -275,9 +308,10 @@ namespace ADO_NET_ДЗ_Модуль_02_часть_01
             }
             if(radioButton8.Checked)
             {
-                dataGridView1.DataSource = loadTable(table_name, "");
+                dataGridView1.DataSource = loadTable(table_name, $"select * from products as p where now() >= p.date_of_delivery + {textBox5.Text}");
             }
         }
+
     }
     
 }
